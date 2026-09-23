@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("teacher")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentsCreated  Student[]    @relation("StudentCreator")
+  predictionsCreated Prediction[] @relation("PredictionCreator")
+
+  @@map("users")
+}
+
+model Student {
+  id              String   @id @default(uuid())
+  studentId       String   @unique
+  firstName       String
+  lastName        String
+  gender          String
+  age             Int
+  classLevel      String
+  department      String
+  attendance      Int
+  previousScore   Int
+  assignmentScore Int
+  studyHours      Int
+  participation   Int
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  creator   User         @relation("StudentCreator", fields: [createdBy], references: [id])
+  predictions Prediction[]
+
+  @@map("students")
+}
+
+model Prediction {
+  id               String   @id @default(uuid())
+  student          String
+  predictedScore   Int
+  performanceLevel String
+  riskLevel        String
+  confidence       Int
+  features         Json
+  recommendation   String
+  createdBy        String
+  createdAt        DateTime @default(now())
+
+  studentRef Student @relation(fields: [student], references: [id])
+  creator    User     @relation("PredictionCreator", fields: [createdBy], references: [id])
+
+  @@map("predictions")
+}
